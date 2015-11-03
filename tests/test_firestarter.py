@@ -5,6 +5,7 @@ from ..firestarter.firestarter import FireStarter
 from ..firestarter.readers import HttpApi
 from ..firestarter.igniters import Lighter
 from ..firestarter.writers import HadoopFileSystem
+from ..firestarter.pyspark import SparkConf, SparkContext
 import json
 
 
@@ -50,11 +51,26 @@ class TestFireStarter(TestCase):
         with patch.object(HadoopFileSystem, '__init__', return_value=None):
           self.firestarter.load_modules()
           self.assertIsInstance(self.firestarter.readers[0], HttpApi)
+          self.assertIsInstance(self.firestarter.modules['my_rest_api'], HttpApi)
           self.assertIsInstance(self.firestarter.modules['readers'][0], HttpApi)
           self.assertIsInstance(self.firestarter.igniters[0], Lighter)
           self.assertIsInstance(self.firestarter.modules['igniters'][0], Lighter)
           self.assertIsInstance(self.firestarter.writers[0], HadoopFileSystem)
           self.assertIsInstance(self.firestarter.modules['writers'][0], HadoopFileSystem)
+          self.assertEqual(self.firestarter.modules['my_rest_api'], self.firestarter.readers[0])
+
+  def test_create_spark_context(self):
+    self.firestarter.config = {"spark_conf": {"app_name": "Fill Your Mother", "parameters": {"num_executors:": 4}}}
+    with patch.object(SparkConf, '__init__', return_value=None) as mock_spark_conf:
+      with patch.object(SparkConf, 'set', return_value=True) as mock_set:
+        with patch.object(SparkConf, 'setAppName', return_value=True) as mock_set_app_name:
+          with patch.object(SparkContext, '__init__', return_value=None) as mock_spark_context:
+            self.firestarter.create_spark_context()
+            mock_set_app_name.assert_called_once_with("Fill Your Mother")
+            mock_set.assert_called_once_with(*set(["num_executors:", 4]))
+            mock_spark_context.assert_called_once_with(**{"conf":self.firestarter.spark_config})
+            self.assertIsInstance(self.firestarter.sc, MockSparkContext)
+
 
 if __name__ == '__main__':
   run_tests()

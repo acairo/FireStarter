@@ -1,8 +1,9 @@
-from pyspark import HiveContext, SparkConf, SparkContext
+# from pyspark import HiveContext, SparkConf, SparkContext
+import requests
 
 class Reader(object):
-  #Will everything work coming back as a list to the SC/HC?
-  self.data = []
+  # Will everything work coming back as a list to the SC/HC?
+  data = []
   
   def read(self):
     self.data = None
@@ -56,14 +57,14 @@ class HttpApi(Reader):
     self.password = password
 
     if self.creds:
-      request = requests.get(self.url, verify=False,
-      auth=HTTPBasicAuth(self.user_name, self.password)
+      request = requests.get(self.url, verify=False, 
+        auth=HTTPBasicAuth(self.user_name, self.password))
     else:
       request = requests.get(self.url, verify=False)
     try:
       data = request.json()
       data = self.data
-    except: Exception as err:
+    except Exception as err:
       print "Failed to read data from {0}. Returned status code {1}! {2}".format(self.uri, 
         request.status_code, err)
 
@@ -74,6 +75,6 @@ class ReadHive(Reader):
     #self.hive_db = hive_db - Over simplifying this for now.
     #self.hive_table = hive_table
     #self.temp_table = temp_table
-    self.query = query
-
-  self.data = self hc.sql(self.query)
+    # self.query = query
+    # self.data = self hc.sql(self.query)
+    pass

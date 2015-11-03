@@ -1,7 +1,9 @@
 "FireStarter": {
     "spark_conf": {
-      "num_executors:": 4,
-      "app_name": "Fill Your Mother"
+      "app_name": "Fill Your Mother",
+      "parameters": {
+        "num_executors:": 4,
+      }
     },
     "Reader": {
       "type": "hive_query" {

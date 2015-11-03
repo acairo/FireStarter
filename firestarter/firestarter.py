@@ -2,6 +2,7 @@ import json
 import readers
 import igniters
 import writers
+from pyspark import SparkConf, SparkContext
 
 required_config = frozenset(['readers'])
 optional_config = frozenset(['igniters', 'writers'])
@@ -35,6 +36,8 @@ class FireStarter():
       raise ValueError('%s must contain %s' % (self.config_file, ', '.join(check_requirements)))
 
   def load_modules(self):
+    """This loop initializes all of the readers,
+    writers, and igniters then stores them in an array"""
     self.modules = {}
     self.readers = self.modules['readers'] = []
     self.igniters = self.modules['igniters'] = []
@@ -44,8 +47,18 @@ class FireStarter():
       mapping = mappings[module_type]
       object_store = self.modules[module_type]
       for module in module_list:
-        new_module = mapping[module['type']](module['parameters'])
+        # Access the module via name, or by order
+        new_module = self.modules[module['name']] = mapping[module['type']](module['parameters'])
         object_store.append(new_module)
+
+  def create_spark_context(self):
+    conf = self.config['spark_conf']
+    self.spark_config = SparkConf()
+    self.spark_config.setAppName(conf['app_name'])
+    for attribute, value in conf['parameters'].items():
+        self.spark_config.set(attribute, value)
+
+    self.sc = SparkContext(conf = self.spark_config)
 
   def run(self):
     self.read_config_file()

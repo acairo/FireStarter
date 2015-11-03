@@ -1,0 +1,41 @@
+{
+  "spark_conf": {
+    "num_executors:": 4,
+    "name": "Fill Your Mother"
+  },
+  "readers": [
+    {
+      "name": "my_rest_api", // Randomized name
+      "type": "http_api",
+      "parameters": {
+        "uri": "http://drunken.guru/"
+      }
+    },
+    {
+      "name": "polaris", // Randomized name
+      "query": "queries.query_server_utilization", // Try to infer from query
+      "database_name": "/polaris", //Don't require slash, if they supply something.yourmother don't require table
+      "type": "hive_query", //
+      "using_table": "None", // Not required
+      "temp_table": "source"
+    }
+  ],
+  "igniters": [
+    {
+      "name": "crunch_the_numbers",
+      "type": "lighter",
+      "parameters": {
+        "math_rules": "2+2=4"
+      }
+    }
+  ],
+  "writers": [
+    {
+      "name": "data_center_cluster",
+      "type": "hdfs",
+      "parameters": {
+        "hive_table": "mydb.table.name"
+      }
+    }
+  ]
+}
