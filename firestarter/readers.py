@@ -80,18 +80,18 @@ class ReadHive(Reader):
     pass
 
 class ReadElasticSearch(Reader):
-  """Reads data from remote ES instance.Takes es_conf a {} with es.resource and es.nodes..
+  """Reads data from remote ES instance.Takes elastic_conf a {} with es.resource and es.nodes..
   Requires the following jar to be imported elasticsearch-hadoop-2.1.2.jar.
 
-   conf = {"es.resource" : "index/type"}   # assume Elasticsearch is running on localhost defaults
+   conf = {"es.resource" : "index/type"}   # w/ out conf assume Elasticsearch is running on localhost defaults
    rdd = sc.newAPIHadoopRDD("org.elasticsearch.hadoop.mr.EsInputFormat",
      "org.apache.hadoop.io.NullWritable", "org.elasticsearch.hadoop.mr.LinkedMapWritable", conf=conf)
   """
 
   def __init__(self, *args):
-    self.conf = conf
+    self.elastic_conf = elastic_conf
   
     es_rdd = sc.newAPIHadoopRDD("org.elasticsearch.hadoop.mr.EsInputFormat", "org.apache.hadoop.io.NullWritable",
-      "org.elasticsearch.hadoop.mr.LinkedMapWritable", conf=conf)
+      "org.elasticsearch.hadoop.mr.LinkedMapWritable", elastic_conf=conf)
     pass
     #return es_rdd #How to return back to context?
