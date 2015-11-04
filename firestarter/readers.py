@@ -93,4 +93,5 @@ class ReadElasticSearch(Reader):
   
     es_rdd = sc.newAPIHadoopRDD("org.elasticsearch.hadoop.mr.EsInputFormat", "org.apache.hadoop.io.NullWritable",
       "org.elasticsearch.hadoop.mr.LinkedMapWritable", conf=conf)
-    return es_rdd #How to return back to context?
+    pass
+    #return es_rdd #How to return back to context?
