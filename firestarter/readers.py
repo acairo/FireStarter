@@ -1,5 +1,7 @@
 # from pyspark import HiveContext, SparkConf, SparkContext
 import requests
+from requests.auth import HTTPBasicAuth
+
 
 class Reader(object):
   # Will everything work coming back as a list to the SC/HC?
@@ -48,25 +50,24 @@ class Reader(object):
 
 class HttpApi(Reader):
   """Reads JSON data from remote API endpoint."""
-  import requests
-  from requests.auth import HTTPBasicAuth
 
-  def __init__(self, *args):
-    self.url = url
-    self.user_name = user_name
-    self.password = password
+  def __init__(self, **args):
+    self.url = args['url']
+    self.username = args['username'] if 'username' in args else None
+    self.password = args['password'] if 'password' in args else None
 
-    if self.creds:
-      request = requests.get(self.url, verify=False, 
-        auth=HTTPBasicAuth(self.user_name, self.password))
-    else:
-      request = requests.get(self.url, verify=False)
+  def read(self):
     try:
-      data = request.json()
-      data = self.data
-    except Exception as err:
-      print "Failed to read data from {0}. Returned status code {1}! {2}".format(self.uri, 
-        request.status_code, err)
+      if self.username and self.password:
+        self.request = requests.get(self.url, verify=False, 
+          auth=HTTPBasicAuth(self.username, self.password))
+      else:
+        self.request = requests.get(self.url, verify=False)
+
+      self.data = self.request.json()
+    except ValueError as err:
+      # TODO(afammartino): Overwrite NotImplemented log method that stores this
+      self.error = err
 
 class ReadHive(Reader):
   """Reads data from Hive table. Use register_hc_temp() to store result in temp."""

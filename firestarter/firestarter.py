@@ -3,6 +3,7 @@ import readers
 import igniters
 import writers
 from pyspark import SparkConf, SparkContext
+from pprint import pprint as pp
 
 required_config = frozenset(['readers'])
 optional_config = frozenset(['igniters', 'writers'])
@@ -18,7 +19,6 @@ mappings = {
       'hdfs': writers.HadoopFileSystem
     }
   }
-
 
 class FireStarter():
 
@@ -45,11 +45,10 @@ class FireStarter():
 
     for module_type, module_list in self.config.items():
       mapping = mappings[module_type]
-      object_store = self.modules[module_type]
       for module in module_list:
         # Access the module via name, or by order
-        new_module = self.modules[module['name']] = mapping[module['type']](module['parameters'])
-        object_store.append(new_module)
+        new_module = self.modules[module['name']] = mapping[module['type']](**module['parameters'])
+        self.modules[module_type].append(new_module)
 
   def create_spark_context(self):
     conf = self.config['spark_conf']

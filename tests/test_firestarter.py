@@ -44,18 +44,20 @@ class TestFireStarter(TestCase):
         self.firestarter.parse_config_contents()
 
   def test_load_all_modules(self):
-    self.firestarter.config = {"readers": [{"name": "my_rest_api","type": "http_api","parameters": {"uri": "http://drunken.guru/"}}],"igniters": [{"name": "crunch_the_numbers","type": "lighter","parameters": {"math_rules": "2+2=4"}}],"writers": [{"name": "data_center_cluster","type": "hdfs","parameters": {"hive_table": "mydb.table.name"}}]}
+    self.firestarter.config = {"readers": [{"name": "my_rest_api","type": "http_api","parameters": {"url": "http://drunken.guru/"}}, {"name": "hive_query","type": "http_api","parameters": {"url": "http://original.guru/"}}],"igniters": [{"name": "crunch_the_numbers","type": "lighter","parameters": {"math_rules": "2+2=4"}}],"writers": [{"name": "data_center_cluster","type": "hdfs","parameters": {"hive_table": "mydb.table.name"}}]}
 
     with patch.object(HttpApi, '__init__', return_value=None):
       with patch.object(Lighter, '__init__', return_value=None):
         with patch.object(HadoopFileSystem, '__init__', return_value=None):
           self.firestarter.load_modules()
           self.assertIsInstance(self.firestarter.readers[0], HttpApi)
-          self.assertIsInstance(self.firestarter.modules['my_rest_api'], HttpApi)
-          self.assertIsInstance(self.firestarter.modules['readers'][0], HttpApi)
+          self.assertIsInstance(self.firestarter.readers[1], HttpApi)
           self.assertIsInstance(self.firestarter.igniters[0], Lighter)
-          self.assertIsInstance(self.firestarter.modules['igniters'][0], Lighter)
           self.assertIsInstance(self.firestarter.writers[0], HadoopFileSystem)
+          self.assertIsInstance(self.firestarter.modules['my_rest_api'], HttpApi)
+          self.assertIsInstance(self.firestarter.modules['hive_query'], HttpApi)
+          self.assertIsInstance(self.firestarter.modules['readers'][0], HttpApi)
+          self.assertIsInstance(self.firestarter.modules['igniters'][0], Lighter)
           self.assertIsInstance(self.firestarter.modules['writers'][0], HadoopFileSystem)
           self.assertEqual(self.firestarter.modules['my_rest_api'], self.firestarter.readers[0])
 
@@ -68,9 +70,25 @@ class TestFireStarter(TestCase):
             self.firestarter.create_spark_context()
             mock_set_app_name.assert_called_once_with("Fill Your Mother")
             mock_set.assert_called_once_with(*set(["num_executors:", 4]))
-            mock_spark_context.assert_called_once_with(**{"conf":self.firestarter.spark_config})
-            self.assertIsInstance(self.firestarter.sc, MockSparkContext)
+            mock_spark_context.assert_called_once_with(**{"conf": self.firestarter.spark_config})
+            self.assertIsInstance(self.firestarter.sc, SparkContext)
 
+  # #integration test!
+  # def test_load_all_modules(self):
+  #   self.firestarter.config = {"readers": [{"name": "my_rest_api","type": "http_api","parameters": {"url": "http://drunken.guru/"}}, {"name": "hive_query","type": "http_api","parameters": {"url": "http://original.guru/"}}],"igniters": [{"name": "crunch_the_numbers","type": "lighter","parameters": {"math_rules": "2+2=4"}}],"writers": [{"name": "data_center_cluster","type": "hdfs","parameters": {"hive_table": "mydb.table.name"}}]}
+  #   with patch.object(Lighter, '__init__', return_value=None):
+  #     with patch.object(HadoopFileSystem, '__init__', return_value=None):
+  #       self.firestarter.load_modules()
+  #       self.assertIsInstance(self.firestarter.readers[0], HttpApi)
+  #       self.assertIsInstance(self.firestarter.readers[1], HttpApi)
+  #       self.assertIsInstance(self.firestarter.igniters[0], Lighter)
+  #       self.assertIsInstance(self.firestarter.writers[0], HadoopFileSystem)
+  #       self.assertIsInstance(self.firestarter.modules['my_rest_api'], HttpApi)
+  #       self.assertIsInstance(self.firestarter.modules['hive_query'], HttpApi)
+  #       self.assertIsInstance(self.firestarter.modules['readers'][0], HttpApi)
+  #       self.assertIsInstance(self.firestarter.modules['igniters'][0], Lighter)
+  #       self.assertIsInstance(self.firestarter.modules['writers'][0], HadoopFileSystem)
+  #       self.assertEqual(self.firestarter.modules['my_rest_api'], self.firestarter.readers[0])
 
 if __name__ == '__main__':
   run_tests()
