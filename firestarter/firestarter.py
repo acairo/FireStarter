@@ -4,23 +4,17 @@ import igniters
 import writers
 from pyspark import SparkConf, SparkContext
 from pprint import pprint as pp
+from collections import OrderedDict
 
-required_config = frozenset(['readers'])
-optional_config = frozenset(['igniters', 'writers'])
-
-mappings = {
-    "readers": {
-      'http_api': readers.HttpApi
-    },
-    "igniters": {
-      'lighter': igniters.Lighter
-    },
-    "writers": {
-      'hdfs': writers.HadoopFileSystem
-    }
-  }
+required_config = frozenset(['modules'])
 
 class FireStarter():
+
+  mappings = {
+    'http_api': readers.HttpApi,
+    'lighter': igniters.Lighter,
+    'hdfs': writers.HadoopFileSystem
+  }
 
   def __init__(self, config_file):
     self.config_file = config_file
@@ -38,17 +32,13 @@ class FireStarter():
   def load_modules(self):
     """This loop initializes all of the readers,
     writers, and igniters then stores them in an array"""
-    self.modules = {}
-    self.readers = self.modules['readers'] = []
-    self.igniters = self.modules['igniters'] = []
-    self.writers = self.modules['writers'] = []
+    self.modules = OrderedDict()
+    self.data = OrderedDict()
 
-    for module_type, module_list in self.config.items():
-      mapping = mappings[module_type]
-      for module in module_list:
-        # Access the module via name, or by order
-        new_module = self.modules[module['name']] = mapping[module['type']](**module['parameters'])
-        self.modules[module_type].append(new_module)
+    for module in self.config['modules']:
+      # Access the module via name, or by order
+      new_module = self.modules[module['name']] = self.mappings[module['type']](**module['parameters'])
+      self.data[module['name']] = new_module.data
 
   def create_spark_context(self):
     conf = self.config['spark_conf']
@@ -59,7 +49,12 @@ class FireStarter():
 
     self.sc = SparkContext(conf = self.spark_config)
 
-  def run(self):
+  def run_modules(self):
+    for name, module in self.modules.items():
+      module.execute()
+
+  def execute(self):
     self.read_config_file()
     self.parse_config_contents()
     self.load_modules()
+    self.run_modules()

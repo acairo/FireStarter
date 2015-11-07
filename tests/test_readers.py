@@ -67,8 +67,6 @@ class TestHttpApi(TestCase):
           self.reader.read()
           self.assertEquals(str(self.reader.error), 'broke yo')
           self.assertEquals(self.reader.data, [])
-            
-
 
   # def test_read(self):
   #   with self.assertRaises(NotImplementedError):

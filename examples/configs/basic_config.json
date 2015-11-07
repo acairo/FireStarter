@@ -3,7 +3,7 @@
     "num_executors:": 4,
     "name": "Fill Your Mother"
   },
-  "readers": [
+  "modules": [
     {
       "name": "my_rest_api", // Randomized name
       "type": "http_api",
@@ -18,18 +18,14 @@
       "type": "hive_query", //
       "using_table": "None", // Not required
       "temp_table": "source"
-    }
-  ],
-  "igniters": [
+    },
     {
       "name": "crunch_the_numbers",
       "type": "lighter",
       "parameters": {
         "math_rules": "2+2=4"
       }
-    }
-  ],
-  "writers": [
+    },
     {
       "name": "data_center_cluster",
       "type": "hdfs",
